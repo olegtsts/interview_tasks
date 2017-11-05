@@ -17,25 +17,28 @@ public:
 template <typename T>
 class List {
 private:
-    Node* head_;
-    Node* tail_;
+    using TNode = Node<T>;
 
+    TNode* head_;
+    TNode* tail_;
+
+public:
     void Add(const T& value) {
-        tail_->next = new Node();
-        tail_->value = value;
-        tail_ = tail_->next;
+        tail_->next_ = new TNode();
+        tail_->value_ = value;
+        tail_ = tail_->next_;
     }
-    void Remove(Node* node) {
-        Node* old_node = node->next_;
+    void Remove(TNode* node) {
+        TNode* old_node = node->next_;
         node->value_ = node->next_->value_;
         node->next_ = node->next_->next_;
         delete old_node;
     }
     List() {
-        head_ = tail_ = new Node();
+        head_ = tail_ = new TNode();
     }
-    Node* Find(const T& value) const {
-        Node* current_node = head_;
+    TNode* Find(const T& value) const {
+        TNode* current_node = head_;
         while (current_node != tail_) {
             if (current_node->value_ == value) {
                 return current_node;
@@ -48,9 +51,9 @@ private:
         return head_ == tail_;
     }
     ~List() {
-        Node* current_node = head_;
+        TNode* current_node = head_;
         while (current_node != tail_) {
-            Node* new_node = current_node->next_;
+            TNode* new_node = current_node->next_;
             delete current_node;
             current_node = new_node;
         }
@@ -58,16 +61,23 @@ private:
     }
     class Iterator {
     private:
-        Node* node_;
+        TNode* node_;
     public:
+        Iterator(TNode* node)
+            : node_(node)
+        {}
         T operator*() const {
             return node_->value_;
         }
         bool operator==(const Iterator& other) const {
             return node_ == other.node_;
         }
+        bool operator!=(const Iterator& other) const {
+            return !(*this == other);
+        }
         Iterator& operator++() {
             node_ = node_->next_;
+            return *this;
         }
     };
 
@@ -102,7 +112,8 @@ private:
 public:
     HashMap(const double load_factor, const size_t initial_size)
         : hasher()
-        , load_factor_()
+        , lists_(initial_size)
+        , load_factor_(load_factor)
         , added_counter(0)
     {}
 
@@ -110,39 +121,41 @@ public:
         if (static_cast<double>(added_counter) / static_cast<double>(lists_.size()) < load_factor_) {
             return;
         }
-        std::vector<List<KeyAndValue<TKey, TValue>>> new_lists(lists_.size());
+        std::vector<List<KeyAndValue<TKey, TValue>>> new_lists(2 * lists_.size());
         for (auto& my_list: lists_) {
-            for (auto& key_and_value: my_list) {
-                new_list[hasher(key_and_value.key_) % (2 * lists_.size())].Add(key_and_value);
+            for (KeyAndValue<TKey, TValue> key_and_value: my_list) {
+                new_lists[hasher(key_and_value.key_) % (2 * lists_.size())].Add(key_and_value);
             }
         }
         lists_ = std::move(new_lists);
+        std::cout << "Done resharding\n";
     }
 
     void Insert(const TKey& key, const TValue& value) {
         lists_[hasher(key) % lists_.size()].Add({key, value});
+        ++added_counter;
         Reshard();
     }
 
     void Remove(const TKey& key) {
         Node<KeyAndValue<TKey, TValue>>* node = lists_[hasher(key) % lists_.size()].Find({key, {}});
-        if (node.IsEmpty()) {
+        if (node->IsDumb()) {
             lists_[hasher(key) % lists_.size()].Remove(node);
         }
     }
     std::unique_ptr<TValue> Get(const TKey& key) const {
-        auto node = lists_[hasher(key) % lists_.size()].Find({key, {}});
-        if (node.IsEmpty()) {
+        Node<KeyAndValue<TKey, TValue>>* node = lists_[hasher(key) % lists_.size()].Find({key, {}});
+        if (node->IsDumb()) {
             return {nullptr};
         } else {
-            return std::make_unique<Node>(node->value_);
+            return std::make_unique<TValue>(node->value_.value_);
         }
     }
-}
+};
 
 class IntHasher {
 public:
-    size_t operator() (const int number) {
+    size_t operator() (const int number) const {
         return static_cast<size_t>(number);
     }
 };
@@ -154,13 +167,13 @@ int main() {
     hash_map.Insert(5, "abce");
     hash_map.Insert(7, "abcf");
     auto node = hash_map.Get(123);
-    if (!node.IsDumb()) {
+    if (node) {
         std::cout << *node << std::endl;
     } else {
         std::cout << "No data\n";
     }
-    node = hash_map.Get(1234);
-    if (!node.IsDumb()) {
+    node = hash_map.Get(12);
+    if (node) {
         std::cout << *node << std::endl;
     } else {
         std::cout << "No data\n";

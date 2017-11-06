@@ -11,11 +11,16 @@ class List {
 private:
     Node<T>* head;
     Node<T>* tail;
+
+    bool is_corrupted_ = false;
 public:
     List() {
         head = tail = new Node<T>();
     }
     ~List() {
+        if (is_corrupted_) {
+            return;
+        }
         Node<T>* current_node = head;
         while (current_node != tail) {
             Node<T>* next_node = current_node->next;
@@ -103,5 +108,9 @@ public:
             out << el << ' ';
         }
         return out;
+    }
+    void Corrupt(const Iterator& first_it, const Iterator& second_it) {
+        is_corrupted_ = true;
+        first_it.node_->next = second_it.node_;
     }
 };

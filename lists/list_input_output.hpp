@@ -12,7 +12,7 @@ std::list<int> GetListFromInput(std::istream& in) {
     }
     return input_list;
 }
-void PrintList(const std::list<int> list, std::ostream& out) {
+void PrintList(const std::list<int>& list, std::ostream& out) {
     for (auto element: list) {
         out << element << ' ';
     }

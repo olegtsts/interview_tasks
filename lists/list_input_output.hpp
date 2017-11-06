@@ -1,7 +1,7 @@
 #include <list>
 #include <iostream>
 
-std::list<int> GetFromInput(std::istream& in) {
+std::list<int> GetListFromInput(std::istream& in) {
     std::list<int> input_list;
     size_t size;
     in >> size;

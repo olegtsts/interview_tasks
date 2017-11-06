@@ -24,7 +24,7 @@ void RemoveDuplicates(std::list<int>& input_list) {
     }
 }
 int main() {
-    std::list<int> input_list = GetFromInput(std::cin);
+    std::list<int> input_list = GetListFromInput(std::cin);
     RemoveDuplicates(input_list);
     PrintList(input_list, std::cout);
     return 0;

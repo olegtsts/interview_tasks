@@ -2,6 +2,11 @@
 #include <deque>
 #include <iostream>
 
+class EmptyVisitor {
+public:
+    void Visit(const size_t, const size_t, const bool) {}
+};
+
 class Tree {
 private:
     std::vector<std::vector<size_t>> neighours_;
@@ -65,5 +70,11 @@ public:
                 }
             }
         }
+    }
+    bool IsThereARoute(const size_t first_vertex, const size_t second_vertex) const {
+        std::vector<bool> is_visited(neighours_.size(), false);
+        EmptyVisitor empty_visitor;
+        DoRecursiveDFS(empty_visitor, first_vertex, is_visited, 0);
+        return is_visited[second_vertex];
     }
 };

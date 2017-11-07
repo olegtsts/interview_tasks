@@ -7,10 +7,23 @@ public:
     void Visit(const size_t, const size_t, const bool) {}
 };
 
+class TabulatedPrinter {
+public:
+    void Visit(const size_t node_index, const size_t depth, const bool) {
+        for (size_t i = 0; i < depth; ++i) {
+            std::cout << "  ";
+        }
+        std::cout << node_index << "\n";
+    }
+};
+
 class Tree {
 private:
     std::vector<std::vector<size_t>> neighours_;
 public:
+    void SetNodesCount(const size_t nodes_count) {
+        neighours_.resize(nodes_count);
+    }
     void AddEdge(const size_t first_vertex, const size_t second_vertex) {
         neighours_[first_vertex].push_back(second_vertex);
         neighours_[second_vertex].push_back(first_vertex);
@@ -76,5 +89,10 @@ public:
         EmptyVisitor empty_visitor;
         DoRecursiveDFS(empty_visitor, first_vertex, is_visited, 0);
         return is_visited[second_vertex];
+    }
+    friend std::ostream& operator<<(std::ostream& out, const Tree& tree) {
+        TabulatedPrinter tabulated_printer;
+        tree.DoDFS(tabulated_printer);
+        return out;
     }
 };

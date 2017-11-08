@@ -12,7 +12,7 @@ size_t GetBitCount(size_t number) {
     return bit_count;
 }
 size_t GetDistinctBitsCount(const size_t a, const size_t b) {
-    return GetBitCount(a & ~b);
+    return GetBitCount(a ^ b);
 }
 int main() {
     size_t a, b;

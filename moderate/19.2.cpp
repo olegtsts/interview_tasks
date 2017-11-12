@@ -6,73 +6,46 @@ enum class Result{
     o_won,
     draw
 };
+
+struct Counters {
+    size_t x_count = 0;
+    size_t o_count = 0;
+};
+
+void AddSymbol(Counters& counter, char symbol) {
+    if (symbol == 'x') {
+        ++counter.x_count;
+    }
+    if (symbol == 'o') {
+        ++counter.o_count;
+    }
+}
+
 Result GetGameResult(const std::vector<std::vector<char>>& field) {
+    std::vector<Counters> counters;
+    Counters diag_counter;
+    Counters other_diag_counter;
     for (size_t i = 0; i < field.size(); ++i) {
-        bool is_x_won = true;
-        bool is_o_won = true;
-        for (size_t j = 0; j < field[i].size(); ++j) {
-            if (field[i][j] != 'x') {
-                is_x_won = false;
-            }
-            if (field[i][j] != 'o') {
-                is_o_won = false;
-            }
+        Counters row_counter;
+        Counters col_counter;
+        for (size_t j = 0; j < field.size(); ++j) {
+            AddSymbol(row_counter, field[i][j]);
+            AddSymbol(col_counter, field[j][i]);
         }
-        if (is_x_won) {
+        AddSymbol(diag_counter, field[i][i]);
+        AddSymbol(other_diag_counter, field[i][field.size() - 1 - i]);
+        counters.push_back(row_counter);
+        counters.push_back(col_counter);
+    }
+    counters.push_back(diag_counter);
+    counters.push_back(other_diag_counter);
+    for (auto& counter: counters) {
+        if (counter.x_count == field.size()) {
             return Result::x_won;
-        } else if (is_o_won) {
+        }
+        if (counter.o_count == field.size()) {
             return Result::o_won;
         }
-    }
-    if (field.size() == 0) {
-        return Result::draw;
-    }
-    for (size_t j = 0; j < field[0].size(); ++j) {
-        bool is_x_won = true;
-        bool is_o_won = true;
-        for (size_t i = 0; i < field.size(); ++i) {
-            if (field[i][j] != 'x') {
-                is_x_won = false;
-            }
-            if (field[i][j] != 'o') {
-                is_o_won = false;
-            }
-        }
-        if (is_x_won) {
-            return Result::x_won;
-        } else if (is_o_won) {
-            return Result::o_won;
-        }
-    }
-    bool is_x_won = true;
-    bool is_o_won = false;
-    for (size_t i = 0; i < field.size(); ++i) {
-        if (field[i][i] != 'x') {
-            is_x_won = false;
-        }
-        if (field[i][i] != 'o') {
-            is_o_won = false;
-        }
-    }
-    if (is_x_won) {
-        return Result::x_won;
-    } else if (is_o_won) {
-        return Result::o_won;
-    }
-    is_x_won = true;
-    is_o_won = false;
-    for (size_t i = 0; i < field.size(); ++i) {
-        if (field[i][field.size() - i - 1] != 'x') {
-            is_x_won = false;
-        }
-        if (field[i][field.size() - i - 1] != 'o') {
-            is_o_won = false;
-        }
-    }
-    if (is_x_won) {
-        return Result::x_won;
-    } else if (is_o_won) {
-        return Result::o_won;
     }
     return Result::draw;
 }

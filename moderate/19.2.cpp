@@ -44,6 +44,36 @@ Result GetGameResult(const std::vector<std::vector<char>>& field) {
             return Result::o_won;
         }
     }
+    bool is_x_won = true;
+    bool is_o_won = false;
+    for (size_t i = 0; i < field.size(); ++i) {
+        if (field[i][i] != 'x') {
+            is_x_won = false;
+        }
+        if (field[i][i] != 'o') {
+            is_o_won = false;
+        }
+    }
+    if (is_x_won) {
+        return Result::x_won;
+    } else if (is_o_won) {
+        return Result::o_won;
+    }
+    is_x_won = true;
+    is_o_won = false;
+    for (size_t i = 0; i < field.size(); ++i) {
+        if (field[i][field.size() - i - 1] != 'x') {
+            is_x_won = false;
+        }
+        if (field[i][field.size() - i - 1] != 'o') {
+            is_o_won = false;
+        }
+    }
+    if (is_x_won) {
+        return Result::x_won;
+    } else if (is_o_won) {
+        return Result::o_won;
+    }
     return Result::draw;
 }
 int main() {
